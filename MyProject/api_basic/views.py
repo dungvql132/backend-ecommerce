@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from .models import Article
 from .serializer import ArticleSerializers
-
+import jwt
 
 # Create your views here.
 @api_view(['GET','POST'])
@@ -14,10 +14,14 @@ def article_list(request):
   if request.method == "GET":
     articles = Article.objects.all()
     serializer = ArticleSerializers(articles, many=True)
+    encoded = jwt.encode({"some": "payload"}, "secret", algorithm="HS256")
+    print("----------encoded: ",encoded)
+    decoded = jwt.decode(encoded, "secret", algorithms=["HS256"])
+    print("-----------decoded:",decoded)
     return Response(data=serializer.data,status=status.HTTP_200_OK)
   elif request.method == "POST":
     data = JSONParser().parse(request)
-    serializer = ArticleSerializers(data = data)
+    serializer = ArticleSerializers(data=data)
     if serializer.is_valid():
       serializer.save()
       return Response(data=serializer.data, status = status.HTTP_201_CREATED)
@@ -33,7 +37,7 @@ def article_detail(request,pk):
 
   if request.method == "GET":
     serializer = ArticleSerializers(article)
-    return Response(data=serializer.data,status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_200_OK,data=serializer.data)
   elif request.method == "PUT":
     data = JSONParser().parse(request)
     serializer = ArticleSerializers(article,data = data)
