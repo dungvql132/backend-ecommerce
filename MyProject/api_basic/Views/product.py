@@ -8,6 +8,15 @@ from api_basic.models import *
 from api_basic.serializer import *
 from api_basic.containt import *
 
+def getAddress(pk):
+  address = AddressSerializer(Address.objects.get(pk=pk)).data
+  return address
+
+def getSupplier(pk):
+  supplier = SupplierSerializer(Supplier.objects.get(pk=pk)).data
+  supplier["address"]=getAddress(supplier["address"])
+  return supplier
+
 def getProduct(pk):
   product = ProductSerializer(Product.objects.get(pk=pk)).data
   product["medias"] = []
@@ -15,6 +24,7 @@ def getProduct(pk):
   for productmedia in lstproductmedia:
     if productmedia['product']==pk:
       product["medias"].append(MediaSerializer(Media.objects.get(pk=productmedia['media'])).data["link"])
+  product["supplier"] = getSupplier(product["supplier"])
   return product
 
 
@@ -25,8 +35,14 @@ def product_listAPIView(request):
       lstLaptop = LaptopSerializer(Laptop.objects.all(), many=True).data
       for laptop in lstLaptop:
         laptop["product"]= getProduct(laptop["product"])
+      lstClothes = ClothesSerializer(Clothes.objects.all(), many=True).data
+      for clothes in lstClothes:
+        clothes["product"]= getProduct(clothes["product"])
+      lstResult = []
+      lstResult.append(lstLaptop)
+      lstResult.append(lstClothes)
       return Response(data={
-        "data":lstLaptop,
+        "data":lstResult,
         "message":MESSAGE_SUCCESS("get all product")
       }, status = status.HTTP_201_CREATED)
     # except:
