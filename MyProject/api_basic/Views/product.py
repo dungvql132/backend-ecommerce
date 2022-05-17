@@ -31,21 +31,22 @@ def getProduct(pk):
 @api_view(['GET','POST'])
 def product_listAPIView(request):
   if request.method == "GET":
-    # try:
+    try:
       lstLaptop = LaptopSerializer(Laptop.objects.all(), many=True).data
+      lstResult = []
       for laptop in lstLaptop:
         laptop["product"]= getProduct(laptop["product"])
+        lstResult.append(laptop["product"])
       lstClothes = ClothesSerializer(Clothes.objects.all(), many=True).data
       for clothes in lstClothes:
         clothes["product"]= getProduct(clothes["product"])
-      lstResult = []
-      lstResult.append(lstLaptop)
-      lstResult.append(lstClothes)
+        lstResult.append(clothes["product"])
+      
       return Response(data={
         "data":lstResult,
         "message":MESSAGE_SUCCESS("get all product")
       }, status = status.HTTP_201_CREATED)
-    # except:
-    #   return Response(data={
-    #     "message":MESSAGE_ERROR
-    #   }, status = status.HTTP_400_BAD_REQUEST)
+    except:
+      return Response(data={
+        "message":MESSAGE_ERROR
+      }, status = status.HTTP_400_BAD_REQUEST)

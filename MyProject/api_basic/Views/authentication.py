@@ -20,17 +20,21 @@ def loginAPIView(request):
       print("seriable:",len(serializer.data) == 1)
       token = None
       if len(serializer.data) == 1:
-        token = jwt.encode(payload=data,key=SECRET_KEY,algorithm=ALGORITHM)
+        token = jwt.encode(payload=serializer.data[0],key=SECRET_KEY,algorithm=ALGORITHM)
       else:
         raise Exception
       return Response(data={
-        "data":data,
-        "token":token,
-        "message":MESSAGE_SUCCESS("login this page")
+        "data":{
+          "userInfo":serializer.data[0],
+          "token":token
+        },
+        "message":MESSAGE_SUCCESS("login this page"),
+        "success":True
       }, status = status.HTTP_201_CREATED)
     except:
       return Response(data={
-        "message":NOT_FOUND("the user")
+        "message":NOT_FOUND("the user"),
+        "success":False
       }, status = status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])
@@ -51,13 +55,17 @@ def registerAPIView(request):
       serializer.is_valid(raise_exception=True)
       serializer.save()
       return Response({
-        "data": data,
-        "token": token,
-        "message":MESSAGE_SUCCESS("login this page")
+        "data": {
+          "userInfo":data,
+          "token":token
+        },
+        "message":MESSAGE_SUCCESS("login this page"),
+        "success":True
       })
     except:
       return Response(data={
-        "message":serializer.errors
+        "message":serializer.errors,
+        "success":False
       }, status = status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
@@ -67,11 +75,15 @@ def getCurrentUser(request):
       token = request.META['HTTP_AUTHORIZATION']
       data = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
       return Response({
-        "data": data,
-        "token": token,
-        "message":MESSAGE_SUCCESS("get current user")
+        "data": {
+          "userInfo":data,
+          "token":token
+        },
+        "message":MESSAGE_SUCCESS("get current user"),
+        "success":True
       })
     except:
       return Response(data={
-        "message":MESSAGE_ERROR
+        "message":MESSAGE_ERROR,
+        "success":False
       }, status = status.HTTP_400_BAD_REQUEST)

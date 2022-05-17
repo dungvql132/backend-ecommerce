@@ -66,7 +66,7 @@ class MyUser(models.Model):
     return self.email
 
 class Media(models.Model):
-  link = models.CharField(max_length=200, null=True, blank=True)
+  link = models.CharField(max_length=20000, null=True, blank=True)
   _id = models.AutoField(primary_key=True, editable=False)
 
   def __str__(self):
